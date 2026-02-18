@@ -1,0 +1,140 @@
+{
+    "exception_error": {
+        "detail_type": "Exception Error",
+        "msg": "Something went wrong.",
+        "reason": "An unexpected server error occurred.",
+        "status_code": 500
+    },
+    "expire_error": {
+        "detail_type": "Token Expired",
+        "msg": "Session expired. Please log in again.",
+        "reason": "The JWT token has expired.",
+        "status_code": 401
+    },
+    "decode_error": {
+        "detail_type": "Invalid Token",
+        "msg": "Authentication failed. Invalid token.",
+        "reason": "The JWT token could not be decoded.",
+        "status_code": 401
+    },
+    "invalid_credentials_error": {
+        "detail_type": "Authentication Failed",
+        "msg": "Invalid credentials.",
+        "reason": "Incorrect email or password. Please try again.",
+        "status_code": 401
+    },
+    "admin_privilege_required_error": {
+        "detail_type": "Access Denied",
+        "msg": "Admin access required.",
+        "reason": "Only admin users are allowed to perform this action.",
+        "status_code": 403
+    },
+    "user_already_exists_error": {
+        "detail_type": "User Exists",
+        "msg": "A user with this email already exists.",
+        "reason": "Duplicate email found in the system.",
+        "status_code": 400
+    },
+    "no_users_found": {
+        "detail_type": "User Not Found",
+        "msg": "No users found in the database.",
+        "reason": "The system did not find any users in the database.",
+        "status_code": 404
+    },
+    "user_not_found": {
+        "detail_type": "User Not Found",
+        "msg": "User not found.",
+        "reason": "No user entry was found with the given ID.",
+        "status_code": 404
+    },
+    "application_not_found": {
+        "detail_type": "Application Not Found",
+        "msg": "Application not found.",
+        "reason": "No application entry was found with the given ID.",
+        "status_code": 404
+    },
+    "no_applications_found": {
+        "detail_type": "Applications Not Found",
+        "msg": "No applications found.",
+        "reason": "There are currently no applications in the database.",
+        "status_code": 404
+    },
+    "package_name_already_exists": {
+        "detail_type": "Package Name Exists",
+        "msg": "An application with this package name already exists.",
+        "reason": "Duplicate package name found in the system.",
+        "status_code": 400
+    },
+    "ad_master_not_found": {
+        "detail_type": "Ad Master Not Found",
+        "msg": "Ad Master not found.",
+        "reason": "No ad master entry was found with the given ID.",
+        "status_code": 404
+    },
+    "no_ad_masters_found": {
+        "detail_type": "Ad Masters Not Found",
+        "msg": "No ad master entries found.",
+        "reason": "There are currently no ad master entries in the database.",
+        "status_code": 404
+    },
+    "ad_master_already_exists": {
+        "detail_type": "Ad Master Exists",
+        "msg": "An ad master with this title and type already exists.",
+        "reason": "Duplicate ad master found in the system.",
+        "status_code": 400
+    },
+    "ad_type_not_found": {
+        "detail_type": "Ad Type Not Found",
+        "msg": "Ad Type not found.",
+        "reason": "No ad type entry was found with the given ID.",
+        "status_code": 404
+    },
+    "no_ad_types_found": {
+        "detail_type": "Ad Types Not Found",
+        "msg": "No ad type entries found.",
+        "reason": "There are currently no ad types in the database.",
+        "status_code": 404
+    },
+    "ad_field_not_found": {
+        "detail_type": "Ad Field Not Found",
+        "msg": "Ad Field not found.",
+        "reason": "No ad field entry was found with the given ID.",
+        "status_code": 404
+    },
+    "no_ad_fields_found": {
+        "detail_type": "Ad Fields Not Found",
+        "msg": "No ad field entries found.",
+        "reason": "There are currently no ad fields in the database.",
+        "status_code": 404
+    },
+    "token_already_revoked": {
+        "detail_type": "Token Already Revoked",
+        "msg": "You are already logged out.",
+        "reason": "This token has already been blacklisted.",
+        "status_code": 400
+    },
+    "duplicate_email_error": {
+        "detail_type": "User Already Exists",
+        "msg": "A user with this email already exists.",
+        "reason": "Duplicate email address.",
+        "status_code": 409
+    },
+    "invalid_ad_format_id": {
+        "detail_type": "Invalid Ad Format",
+        "msg": "The provided ad_format_id does not reference a valid ad format.",
+        "reason": "ad_format_id must reference an ad_master record with type='ad_format'.",
+        "status_code": 422
+    },
+    "invalid_ad_platform_id": {
+        "detail_type": "Invalid Ad Platform",
+        "msg": "The provided ad_platform_id does not reference a valid ad platform.",
+        "reason": "ad_platform_id must reference an ad_master record with type='ad_platform'.",
+        "status_code": 422
+    },
+    "assign_by_must_be_user_role": {
+        "detail_type": "Invalid Assignment",
+        "msg": "Applications can only be assigned to users with role 'user'.",
+        "reason": "The assign_by field must reference a user with role='user', not an admin.",
+        "status_code": 422
+    }
+}

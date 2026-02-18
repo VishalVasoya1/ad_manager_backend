@@ -1,0 +1,134 @@
+{
+    "user_register_success": {
+        "detail_type": "Success",
+        "msg": "User registered successfully.",
+        "reason": "The user has been added to the system successfully.",
+        "status_code": 201
+    },
+    "user_login_success": {
+        "detail_type": "Success",
+        "msg": "Login successful.",
+        "reason": "User credentials validated and access token generated.",
+        "status_code": 200
+    },
+    "user_retrieve_success": {
+        "detail_type": "Success",
+        "msg": "Users retrieved successfully.",
+        "reason": "All users were successfully fetched from the database.",
+        "status_code": 200
+    },
+    "user_update_success": {
+        "detail_type": "Success",
+        "msg": "User updated successfully.",
+        "reason": "The user record was updated in the database.",
+        "status_code": 200
+    },
+    "user_delete_success": {
+        "detail_type": "Success",
+        "msg": "User deleted successfully.",
+        "reason": "The user was soft-deleted from the system.",
+        "status_code": 200
+    },
+    "application_create_success": {
+        "detail_type": "ApplicationCreated",
+        "msg": "Application created successfully.",
+        "reason": "The application was saved to the database.",
+        "status_code": 201
+    },
+    "application_retrieve_success": {
+        "detail_type": "ApplicationFetched",
+        "msg": "Application(s) retrieved successfully.",
+        "reason": "The application data was fetched from the database.",
+        "status_code": 200
+    },
+    "application_update_success": {
+        "detail_type": "ApplicationUpdated",
+        "msg": "Application updated successfully.",
+        "reason": "The application was updated in the database.",
+        "status_code": 200
+    },
+    "application_delete_success": {
+        "detail_type": "ApplicationDeleted",
+        "msg": "Application deleted successfully.",
+        "reason": "The application was soft-deleted from the system.",
+        "status_code": 200
+    },
+    "ad_master_create_success": {
+        "detail_type": "AdMasterCreated",
+        "msg": "Ad Master created successfully.",
+        "reason": "The ad master entry was saved to the database.",
+        "status_code": 201
+    },
+    "ad_master_retrieve_success": {
+        "detail_type": "AdMasterFetched",
+        "msg": "Ad Master(s) retrieved successfully.",
+        "reason": "The ad master data was fetched from the database.",
+        "status_code": 200
+    },
+    "ad_master_update_success": {
+        "detail_type": "AdMasterUpdated",
+        "msg": "Ad Master updated successfully.",
+        "reason": "The ad master entry was updated in the database.",
+        "status_code": 200
+    },
+    "ad_master_delete_success": {
+        "detail_type": "AdMasterDeleted",
+        "msg": "Ad Master deleted successfully.",
+        "reason": "The ad master entry was soft-deleted from the system.",
+        "status_code": 200
+    },
+    "ad_type_create_success": {
+        "detail_type": "AdTypeCreated",
+        "msg": "Ad Type created successfully.",
+        "reason": "The ad type entry was saved to the database.",
+        "status_code": 201
+    },
+    "ad_type_retrieve_success": {
+        "detail_type": "AdTypeFetched",
+        "msg": "Ad Type(s) retrieved successfully.",
+        "reason": "The ad type data was fetched from the database.",
+        "status_code": 200
+    },
+    "ad_type_update_success": {
+        "detail_type": "AdTypeUpdated",
+        "msg": "Ad Type updated successfully.",
+        "reason": "The ad type entry was updated in the database.",
+        "status_code": 200
+    },
+    "ad_type_delete_success": {
+        "detail_type": "AdTypeDeleted",
+        "msg": "Ad Type deleted successfully.",
+        "reason": "The ad type entry was soft-deleted from the system.",
+        "status_code": 200
+    },
+    "ad_field_create_success": {
+        "detail_type": "AdFieldCreated",
+        "msg": "Ad Field created successfully.",
+        "reason": "The ad field entry was saved to the database.",
+        "status_code": 201
+    },
+    "ad_field_retrieve_success": {
+        "detail_type": "AdFieldFetched",
+        "msg": "Ad Field(s) retrieved successfully.",
+        "reason": "The ad field data was fetched from the database.",
+        "status_code": 200
+    },
+    "ad_field_update_success": {
+        "detail_type": "AdFieldUpdated",
+        "msg": "Ad Field updated successfully.",
+        "reason": "The ad field entry was updated in the database.",
+        "status_code": 200
+    },
+    "ad_field_delete_success": {
+        "detail_type": "AdFieldDeleted",
+        "msg": "Ad Field deleted successfully.",
+        "reason": "The ad field entry was soft-deleted from the system.",
+        "status_code": 200
+    },
+    "user_logout_success": {
+        "detail_type": "Success",
+        "msg": "Logged out successfully.",
+        "reason": "The access token has been invalidated.",
+        "status_code": 200
+    }
+}
