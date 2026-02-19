@@ -14,6 +14,7 @@ from app.utils.helper import load_message_details, format_response, exception_fo
 from app.router.ad_master.ad_master_access import AdMasterQuery
 from app.router.ad_master.ad_master_validator import AdMasterCreateRequest, AdMasterUpdateRequest, AdMasterOut, AdMasterSearchOut
 from app.model.ad_master import AdMaster
+from app.services.activity.activity_service import ActivityService
 
 
 _BASE = Path(__file__).resolve().parents[3]
@@ -50,6 +51,8 @@ class AdMasterRouter:
         endpoint = "/ad-master"
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
+
             existing = await AdMasterQuery.get_by_title_and_type_any(body.title, body.type, db)
             if existing and not existing.is_deleted:
                 self.raise_detailed_exception(endpoint, "ad_master_already_exists")
@@ -58,12 +61,27 @@ class AdMasterRouter:
             db.add(ad)
             await db.flush()
             await db.refresh(ad)
-
             await db.commit()
             await db.refresh(ad)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_master",
+                action="create",
+                reference_id=ad.id,
+                description=f"Created ad master '{ad.title}' of type '{ad.type}'.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_master_create_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdMasterOut.model_validate(ad).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdMasterOut.model_validate(ad).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -72,15 +90,28 @@ class AdMasterRouter:
     async def get_all(self, request: Request, user_id: Optional[UUID] = Query(None), type: Optional[str] = Query(None), db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Return all active ad master entries with optional filters for user_id and type."""
         endpoint = "/ad-master"
-       
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             items = await AdMasterQuery.get_all(db, user_id, type)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_master",
+                action="view",
+                description="Listed all ad master entries.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "ad_master_retrieve_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=[AdMasterOut.model_validate(i).model_dump() for i in items], msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=[AdMasterOut.model_validate(i).model_dump() for i in items],
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -91,15 +122,29 @@ class AdMasterRouter:
         endpoint = f"/ad-master/{ad_master_id}"
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             ad = await AdMasterQuery.get_by_id(ad_master_id, db)
             if not ad:
                 self.raise_detailed_exception(endpoint, "ad_master_not_found")
 
-        
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_master",
+                action="view",
+                reference_id=ad_master_id,
+                description=f"Viewed ad master {ad_master_id}.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "ad_master_retrieve_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdMasterOut.model_validate(ad).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdMasterOut.model_validate(ad).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -108,9 +153,9 @@ class AdMasterRouter:
     async def update(self, request: Request, ad_master_id: UUID, body: AdMasterUpdateRequest, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Update the title of an ad master entry."""
         endpoint = f"/ad-master/{ad_master_id}"
-    
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             ad = await AdMasterQuery.get_by_id(ad_master_id, db)
             if not ad:
                 self.raise_detailed_exception(endpoint, "ad_master_not_found")
@@ -123,8 +168,24 @@ class AdMasterRouter:
             await db.commit()
             await db.refresh(ad)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_master",
+                action="update",
+                reference_id=ad_master_id,
+                description=f"Updated ad master '{ad.title}'.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_master_update_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdMasterOut.model_validate(ad).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdMasterOut.model_validate(ad).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -133,9 +194,9 @@ class AdMasterRouter:
     async def delete(self, request: Request, ad_master_id: UUID, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Soft-delete an ad master entry."""
         endpoint = f"/ad-master/{ad_master_id}"
-  
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             ad = await AdMasterQuery.get_by_id(ad_master_id, db)
             if not ad:
                 self.raise_detailed_exception(endpoint, "ad_master_not_found")
@@ -144,8 +205,24 @@ class AdMasterRouter:
             await db.flush()
             await db.commit()
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_master",
+                action="delete",
+                reference_id=ad_master_id,
+                description=f"Deleted ad master {ad_master_id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_master_delete_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=None, msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=None,
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -154,13 +231,21 @@ class AdMasterRouter:
     def handle_exception(self, endpoint, e):
         """Raise a generic 500 HTTP exception."""
         error_type = "exception_error"
-        response = exception_format_response(detail_type=error_details[error_type]["detail_type"], msg=error_details[error_type]["msg"], reason=str(e))
+        response = exception_format_response(
+            detail_type=error_details[error_type]["detail_type"],
+            msg=error_details[error_type]["msg"],
+            reason=str(e),
+        )
         logger.critical(f"{endpoint}: {error_type} - {response}")
         raise HTTPException(status_code=error_details[error_type]["status_code"], detail=[response])
 
     def raise_detailed_exception(self, endpoint: str, error_type: str):
         """Raise a typed HTTP exception using the error details registry."""
-        response = exception_format_response(detail_type=error_details[error_type]["detail_type"], msg=error_details[error_type]["msg"], reason=error_details[error_type]["reason"])
+        response = exception_format_response(
+            detail_type=error_details[error_type]["detail_type"],
+            msg=error_details[error_type]["msg"],
+            reason=error_details[error_type]["reason"],
+        )
         logger.critical(f"{endpoint}: {error_type} - {response}")
         raise HTTPException(status_code=error_details[error_type]["status_code"], detail=[response])
 

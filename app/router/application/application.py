@@ -15,6 +15,7 @@ from app.utils.helper import load_message_details, format_response, exception_fo
 from app.router.application.application_access import ApplicationQuery
 from app.router.application.application_validator import ApplicationCreateRequest, ApplicationUpdateRequest, ApplicationOut
 from app.model.application import Application
+from app.services.activity.activity_service import ActivityService
 
 
 _BASE = Path(__file__).resolve().parents[3]
@@ -40,14 +41,15 @@ class ApplicationRouter:
         endpoint = "/application"
         try:
             admin_id = UUID(payload["user_id"])
-            
+            ip_address = request.client.host if request.client else None
+
             from app.router.user.user_access import UserQuery
             assigned_user = await UserQuery.get_user_by_id(db, body.assign_by)
             if not assigned_user:
                 self.raise_detailed_exception(endpoint, "user_not_found")
             if assigned_user.role != "user":
                 self.raise_detailed_exception(endpoint, "assign_by_must_be_user_role")
-            
+
             if body.package_name:
                 existing = await ApplicationQuery.get_by_package_name_any(body.package_name, db)
                 if existing and not existing.is_deleted:
@@ -64,6 +66,17 @@ class ApplicationRouter:
             await db.refresh(app)
             await db.commit()
             await db.refresh(app)
+
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="application",
+                action="create",
+                reference_id=app.id,
+                description=f"Created application '{app.package_name}'.",
+                ip_address=ip_address,
+            )
+            await db.commit()
 
             success_type = "application_create_success"
             return format_response(
@@ -93,14 +106,23 @@ class ApplicationRouter:
         endpoint = "/application"
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             total, apps = await ApplicationQuery.get_all(db, page, size, search, app_type, status_filter)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="application",
+                action="view",
+                description="Listed all applications.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "application_retrieve_success"
             return format_response(
                 detail_type=success_details[success_type]["detail_type"],
-                data={"pagiation" : {"total": total, "page": page, "size": size},
+                data={"pagiation": {"total": total, "page": page, "size": size},
                       "items": [ApplicationOut.model_validate(a).model_dump() for a in apps]},
                 msg=success_details[success_type]["msg"],
                 status_code=success_details[success_type]["status_code"],
@@ -115,10 +137,20 @@ class ApplicationRouter:
         endpoint = f"/application/{app_id}"
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             app = await ApplicationQuery.get_by_id(app_id, db)
             if not app:
                 self.raise_detailed_exception(endpoint, "application_not_found")
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="application",
+                action="view",
+                reference_id=app_id,
+                description=f"Viewed application {app_id}.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "application_retrieve_success"
@@ -136,9 +168,9 @@ class ApplicationRouter:
     async def update(self, request: Request, app_id: UUID, body: ApplicationUpdateRequest, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Update application fields. Only provided fields are changed."""
         endpoint = f"/application/{app_id}"
-        
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             app = await ApplicationQuery.get_by_id(app_id, db)
             if not app:
                 self.raise_detailed_exception(endpoint, "application_not_found")
@@ -159,6 +191,17 @@ class ApplicationRouter:
             await db.commit()
             await db.refresh(app)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="application",
+                action="update",
+                reference_id=app_id,
+                description=f"Updated application {app_id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "application_update_success"
             return format_response(
                 detail_type=success_details[success_type]["detail_type"],
@@ -174,15 +217,26 @@ class ApplicationRouter:
     async def delete(self, request: Request, app_id: UUID, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Soft-delete an application."""
         endpoint = f"/application/{app_id}"
-        
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             app = await ApplicationQuery.get_by_id(app_id, db)
             if not app:
                 self.raise_detailed_exception(endpoint, "application_not_found")
 
             app.is_deleted = True
             await db.flush()
+            await db.commit()
+
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="application",
+                action="delete",
+                reference_id=app_id,
+                description=f"Deleted application {app_id}.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "application_delete_success"
@@ -202,6 +256,7 @@ class ApplicationRouter:
         endpoint = f"/application/{app_id}/reset-api-key"
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             app = await ApplicationQuery.get_by_id(app_id, db)
             if not app:
                 self.raise_detailed_exception(endpoint, "application_not_found")
@@ -212,6 +267,17 @@ class ApplicationRouter:
             await db.flush()
             await db.commit()
             await db.refresh(app)
+
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="application",
+                action="update",
+                reference_id=app_id,
+                description=f"Reset API key for application {app_id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
 
             success_type = "application_update_success"
             return format_response(

@@ -136,5 +136,17 @@
         "msg": "Applications can only be assigned to users with role 'user'.",
         "reason": "The assign_by field must reference a user with role='user', not an admin.",
         "status_code": 422
+    },
+    "login_log_not_found": {
+        "detail_type": "Login Log Not Found",
+        "msg": "Login log not found.",
+        "reason": "No login log entry was found with the given ID.",
+        "status_code": 404
+    },
+    "activity_not_found": {
+        "detail_type": "Activity Not Found",
+        "msg": "Activity record not found.",
+        "reason": "No activity entry was found with the given ID.",
+        "status_code": 404
     }
 }

@@ -11,6 +11,8 @@ from app.router.application.application import ApplicationRouter
 from app.router.ad_master.ad_master import AdMasterRouter
 from app.router.ad_type.ad_type import AdTypeRouter
 from app.router.ad_field.ad_field import AdFieldRouter
+from app.router.logs.logs import LoginLogsRouter
+from app.router.activity.activity import UserActivityRouter
 
 
 class AdManagerApp(FastAPI):
@@ -40,6 +42,8 @@ class AdManagerApp(FastAPI):
         self.include_router(AdMasterRouter().router)
         self.include_router(AdTypeRouter().router)
         self.include_router(AdFieldRouter().router)
+        self.include_router(LoginLogsRouter().router)
+        self.include_router(UserActivityRouter().router)
 
     async def _cleanup_blacklist_loop(self):
         """Periodically delete expired tokens from the blacklist every 10 minutes."""

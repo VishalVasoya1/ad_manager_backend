@@ -130,5 +130,17 @@
         "msg": "Logged out successfully.",
         "reason": "The access token has been invalidated.",
         "status_code": 200
+    },
+    "login_logs_retrieve_success": {
+        "detail_type": "Success",
+        "msg": "Login logs retrieved successfully.",
+        "reason": "Login log records were fetched from the database.",
+        "status_code": 200
+    },
+    "activity_retrieve_success": {
+        "detail_type": "Success",
+        "msg": "Activity logs retrieved successfully.",
+        "reason": "User activity records were fetched from the database.",
+        "status_code": 200
     }
 }

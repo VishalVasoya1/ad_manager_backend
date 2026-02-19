@@ -14,6 +14,7 @@ from app.utils.helper import load_message_details, format_response, exception_fo
 from app.router.ad_field.ad_field_access import AdFieldQuery
 from app.router.ad_field.ad_field_validator import AdFieldCreateRequest, AdFieldUpdateRequest, AdFieldOut
 from app.model.ad_field import AdField
+from app.services.activity.activity_service import ActivityService
 
 
 _BASE = Path(__file__).resolve().parents[3]
@@ -36,20 +37,35 @@ class AdFieldRouter:
     async def create(self, request: Request, body: AdFieldCreateRequest, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Create a new ad field."""
         endpoint = "/ad-field"
-       
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
+
             field = AdField(**body.model_dump(), created_by=admin_id, updated_by=admin_id)
             db.add(field)
             await db.flush()
             await db.refresh(field)
-
-            
             await db.commit()
             await db.refresh(field)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_field",
+                action="create",
+                reference_id=field.id,
+                description=f"Created ad field {field.id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_field_create_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdFieldOut.model_validate(field).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdFieldOut.model_validate(field).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -58,16 +74,28 @@ class AdFieldRouter:
     async def get_all(self, request: Request, app_id: Optional[UUID] = Query(None), ad_type_id: Optional[UUID] = Query(None), type: Optional[str] = Query(None), user_id: Optional[UUID] = Query(None), db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Return all active ad fields with optional filters for app_id, ad_type_id, type, and user_id."""
         endpoint = "/ad-field"
-        
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             items = await AdFieldQuery.get_all(db, app_id, ad_type_id, type, user_id)
 
-            
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_field",
+                action="view",
+                description="Listed all ad fields.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "ad_field_retrieve_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=[AdFieldOut.model_validate(i).model_dump() for i in items], msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=[AdFieldOut.model_validate(i).model_dump() for i in items],
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -76,17 +104,31 @@ class AdFieldRouter:
     async def get(self, request: Request, field_id: UUID, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Return a single ad field by ID."""
         endpoint = f"/ad-field/{field_id}"
-       
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             item = await AdFieldQuery.get_by_id(field_id, db)
             if not item:
                 self.raise_detailed_exception(endpoint, "ad_field_not_found")
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_field",
+                action="view",
+                reference_id=field_id,
+                description=f"Viewed ad field {field_id}.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "ad_field_retrieve_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdFieldOut.model_validate(item).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdFieldOut.model_validate(item).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -95,9 +137,9 @@ class AdFieldRouter:
     async def update(self, request: Request, field_id: UUID, body: AdFieldUpdateRequest, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Update ad field fields. Only provided fields are changed."""
         endpoint = f"/ad-field/{field_id}"
-        
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             item = await AdFieldQuery.get_by_id(field_id, db)
             if not item:
                 self.raise_detailed_exception(endpoint, "ad_field_not_found")
@@ -110,8 +152,24 @@ class AdFieldRouter:
             await db.commit()
             await db.refresh(item)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_field",
+                action="update",
+                reference_id=field_id,
+                description=f"Updated ad field {field_id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_field_update_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdFieldOut.model_validate(item).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdFieldOut.model_validate(item).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -120,9 +178,9 @@ class AdFieldRouter:
     async def delete(self, request: Request, field_id: UUID, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Soft-delete an ad field."""
         endpoint = f"/ad-field/{field_id}"
-        
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             item = await AdFieldQuery.get_by_id(field_id, db)
             if not item:
                 self.raise_detailed_exception(endpoint, "ad_field_not_found")
@@ -131,8 +189,24 @@ class AdFieldRouter:
             await db.flush()
             await db.commit()
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_field",
+                action="delete",
+                reference_id=field_id,
+                description=f"Deleted ad field {field_id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_field_delete_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=None, msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=None,
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -141,13 +215,21 @@ class AdFieldRouter:
     def handle_exception(self, endpoint, e):
         """Raise a generic 500 HTTP exception."""
         error_type = "exception_error"
-        response = exception_format_response(detail_type=error_details[error_type]["detail_type"], msg=error_details[error_type]["msg"], reason=str(e))
+        response = exception_format_response(
+            detail_type=error_details[error_type]["detail_type"],
+            msg=error_details[error_type]["msg"],
+            reason=str(e),
+        )
         logger.critical(f"{endpoint}: {error_type} - {response}")
         raise HTTPException(status_code=error_details[error_type]["status_code"], detail=[response])
 
     def raise_detailed_exception(self, endpoint: str, error_type: str):
         """Raise a typed HTTP exception using the error details registry."""
-        response = exception_format_response(detail_type=error_details[error_type]["detail_type"], msg=error_details[error_type]["msg"], reason=error_details[error_type]["reason"])
+        response = exception_format_response(
+            detail_type=error_details[error_type]["detail_type"],
+            msg=error_details[error_type]["msg"],
+            reason=error_details[error_type]["reason"],
+        )
         logger.critical(f"{endpoint}: {error_type} - {response}")
         raise HTTPException(status_code=error_details[error_type]["status_code"], detail=[response])
 

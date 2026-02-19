@@ -15,6 +15,7 @@ from app.router.ad_type.ad_type_access import AdTypeQuery
 from app.router.ad_type.ad_type_validator import AdTypeCreateRequest, AdTypeUpdateRequest, AdTypeOut
 from app.router.ad_master.ad_master_access import AdMasterQuery
 from app.model.ad_type import AdType
+from app.services.activity.activity_service import ActivityService
 
 
 _BASE = Path(__file__).resolve().parents[3]
@@ -39,6 +40,7 @@ class AdTypeRouter:
         endpoint = "/ad-type"
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
 
             if not await AdMasterQuery.get_by_id_and_type(body.ad_format_id, "ad_format", db):
                 self.raise_detailed_exception(endpoint, "invalid_ad_format_id")
@@ -53,8 +55,24 @@ class AdTypeRouter:
             await db.commit()
             await db.refresh(ad_type)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_type",
+                action="create",
+                reference_id=ad_type.id,
+                description=f"Created ad type {ad_type.id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_type_create_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdTypeOut.model_validate(ad_type).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdTypeOut.model_validate(ad_type).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -65,12 +83,26 @@ class AdTypeRouter:
         endpoint = "/ad-type"
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             items = await AdTypeQuery.get_all(db, app_id, status, user_id)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_type",
+                action="view",
+                description="Listed all ad types.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "ad_type_retrieve_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=[AdTypeOut.model_validate(i).model_dump() for i in items], msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=[AdTypeOut.model_validate(i).model_dump() for i in items],
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -79,17 +111,31 @@ class AdTypeRouter:
     async def get(self, request: Request, ad_type_id: UUID, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Return a single ad type by ID."""
         endpoint = f"/ad-type/{ad_type_id}"
-        
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             item = await AdTypeQuery.get_by_id(ad_type_id, db)
             if not item:
                 self.raise_detailed_exception(endpoint, "ad_type_not_found")
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_type",
+                action="view",
+                reference_id=ad_type_id,
+                description=f"Viewed ad type {ad_type_id}.",
+                ip_address=ip_address,
+            )
             await db.commit()
 
             success_type = "ad_type_retrieve_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdTypeOut.model_validate(item).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdTypeOut.model_validate(item).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -98,9 +144,9 @@ class AdTypeRouter:
     async def update(self, request: Request, ad_type_id: UUID, body: AdTypeUpdateRequest, db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
         """Update the status of an ad type."""
         endpoint = f"/ad-type/{ad_type_id}"
-       
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             item = await AdTypeQuery.get_by_id(ad_type_id, db)
             if not item:
                 self.raise_detailed_exception(endpoint, "ad_type_not_found")
@@ -110,12 +156,27 @@ class AdTypeRouter:
             item.updated_by = admin_id
 
             await db.flush()
-            
             await db.commit()
             await db.refresh(item)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_type",
+                action="update",
+                reference_id=ad_type_id,
+                description=f"Updated ad type {ad_type_id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_type_update_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=AdTypeOut.model_validate(item).model_dump(), msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=AdTypeOut.model_validate(item).model_dump(),
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -126,6 +187,7 @@ class AdTypeRouter:
         endpoint = f"/ad-type/{ad_type_id}"
         try:
             admin_id = UUID(payload["user_id"])
+            ip_address = request.client.host if request.client else None
             item = await AdTypeQuery.get_by_id(ad_type_id, db)
             if not item:
                 self.raise_detailed_exception(endpoint, "ad_type_not_found")
@@ -134,8 +196,24 @@ class AdTypeRouter:
             await db.flush()
             await db.commit()
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="ad_type",
+                action="delete",
+                reference_id=ad_type_id,
+                description=f"Deleted ad type {ad_type_id}.",
+                ip_address=ip_address,
+            )
+            await db.commit()
+
             success_type = "ad_type_delete_success"
-            return format_response(detail_type=success_details[success_type]["detail_type"], data=None, msg=success_details[success_type]["msg"], status_code=success_details[success_type]["status_code"])
+            return format_response(
+                detail_type=success_details[success_type]["detail_type"],
+                data=None,
+                msg=success_details[success_type]["msg"],
+                status_code=success_details[success_type]["status_code"],
+            )
         except HTTPException as e:
             raise e
         except Exception as e:
@@ -144,13 +222,21 @@ class AdTypeRouter:
     def handle_exception(self, endpoint, e):
         """Raise a generic 500 HTTP exception."""
         error_type = "exception_error"
-        response = exception_format_response(detail_type=error_details[error_type]["detail_type"], msg=error_details[error_type]["msg"], reason=str(e))
+        response = exception_format_response(
+            detail_type=error_details[error_type]["detail_type"],
+            msg=error_details[error_type]["msg"],
+            reason=str(e),
+        )
         logger.critical(f"{endpoint}: {error_type} - {response}")
         raise HTTPException(status_code=error_details[error_type]["status_code"], detail=[response])
 
     def raise_detailed_exception(self, endpoint: str, error_type: str):
         """Raise a typed HTTP exception using the error details registry."""
-        response = exception_format_response(detail_type=error_details[error_type]["detail_type"], msg=error_details[error_type]["msg"], reason=error_details[error_type]["reason"])
+        response = exception_format_response(
+            detail_type=error_details[error_type]["detail_type"],
+            msg=error_details[error_type]["msg"],
+            reason=error_details[error_type]["reason"],
+        )
         logger.critical(f"{endpoint}: {error_type} - {response}")
         raise HTTPException(status_code=error_details[error_type]["status_code"], detail=[response])
 

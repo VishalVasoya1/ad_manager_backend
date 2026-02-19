@@ -22,6 +22,7 @@ from app.router.user.user_validator import (
     UserCreateRequest,
     UserUpdateRequest,
 )
+from app.services.activity.activity_service import ActivityService
 
 _BASE = Path(__file__).resolve().parents[3]
 logger = get_logger(__name__)
@@ -73,6 +74,17 @@ class UserRouter:
             await db.commit()
             await db.refresh(new_user)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="user",
+                action="create",
+                reference_id=new_user.id,
+                description=f"Created user {new_user.email} with role {new_user.role}.",
+                ip_address=request.client.host if request.client else None,
+            )
+            await db.commit()
+
             success_type = "user_register_success"
             return format_response(
                 detail_type=success_details[success_type]["detail_type"],
@@ -107,6 +119,15 @@ class UserRouter:
             total, users = await UserQuery.get_all_users(
                 db=db, page=page, size=size, search=search, role=role, status=status_filter,
             )
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="user",
+                action="view",
+                description="Listed all users.",
+                ip_address=request.client.host if request.client else None,
+            )
+            await db.commit()
             success_type = "user_retrieve_success"
             return format_response(
                 detail_type=success_details[success_type]["detail_type"],
@@ -138,6 +159,17 @@ class UserRouter:
 
             if not user:
                 self.raise_detailed_exception(endpoint, "user_not_found")
+
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="user",
+                action="view",
+                reference_id=user_id,
+                description=f"Viewed user {user.email}.",
+                ip_address=request.client.host if request.client else None,
+            )
+            await db.commit()
 
             success_type = "user_retrieve_success"
             return format_response(
@@ -174,8 +206,6 @@ class UserRouter:
                 user.email = body.email.lower()
             if body.password:
                 user.password = PasswordManager().get_hashed_password(body.password)
-            if body.role:
-                user.role = body.role.lower()
             if body.status:
                 user.status = body.status.lower()
             
@@ -183,6 +213,16 @@ class UserRouter:
             await db.commit()
             await db.refresh(user)
 
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="user",
+                action="update",
+                reference_id=user_id,
+                description=f"Updated user {user.email}.",
+                ip_address=request.client.host if request.client else None,
+            )
+            await db.commit()
 
             success_type = "user_update_success"
             return format_response(
@@ -215,6 +255,17 @@ class UserRouter:
                 self.raise_detailed_exception(endpoint, "user_not_found")
 
             user.is_deleted = True
+            await db.commit()
+
+            await ActivityService.log_activity(
+                db=db,
+                user_id=admin_id,
+                module="user",
+                action="delete",
+                reference_id=user_id,
+                description=f"Deleted user {user_id}.",
+                ip_address=request.client.host if request.client else None,
+            )
             await db.commit()
 
             success_type = "user_delete_success"
