@@ -17,7 +17,7 @@ async def create_first_admin():
         # Create first admin
         admin_user = User(
             id=uuid.uuid4(),
-            email="admin@admanager.com",
+            email="admin@gmail.com",
             status="active",
             password=bcrypt.hash("Admin@123"),  # use secure password
             role="admin",

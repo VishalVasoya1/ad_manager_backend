@@ -68,3 +68,17 @@ def require_admin(payload: dict = Depends(jwt_bearer)):
             }]
         )
     return payload
+
+
+def require_user(payload: dict = Depends(jwt_bearer)):
+    """Raise 403 if the authenticated user is not a regular user (role='user')."""
+    if payload.get("role") != "user":
+        raise HTTPException(
+            status_code=403,
+            detail=[{
+                "type": "Access Denied",
+                "msg": "User access required.",
+                "ctx": {"reason": "Only regular users are allowed to access this endpoint."},
+            }]
+        )
+    return payload

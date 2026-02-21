@@ -148,5 +148,11 @@
         "msg": "Activity record not found.",
         "reason": "No activity entry was found with the given ID.",
         "status_code": 404
+    },
+    "user_access_denied": {
+        "detail_type": "Access Denied",
+        "msg": "You do not have access to this resource.",
+        "reason": "This resource is not assigned to your account.",
+        "status_code": 403
     }
 }

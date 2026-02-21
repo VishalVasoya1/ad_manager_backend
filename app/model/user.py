@@ -22,7 +22,6 @@ class User(BaseModel):
 
     email: Mapped[str] = mapped_column(
         VARCHAR(255),
-        unique=True,
         nullable=False,
         index=True,
     )

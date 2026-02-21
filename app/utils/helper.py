@@ -7,6 +7,9 @@ from typing import Optional
 
 from fastapi import Path, Query, HTTPException
 from pydantic import UUID4
+from app.services.logger.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def format_response(
@@ -53,8 +56,11 @@ def exception_format_response(
 
 def load_message_details(file_path: str) -> dict:
     """Load message details from a JSON file."""
+    logger.debug("Loading message details from file_path=%s", file_path)
     with open(file_path, "r") as file:
-        return json.load(file)
+        data = json.load(file)
+    logger.debug("Loaded message detail keys=%s", len(data))
+    return data
 
 
 def serialize_datetime(obj):
@@ -71,6 +77,7 @@ def parse_optional_uuid_path(model_id: str = Path(...)) -> Optional[UUID4]:
     try:
         return UUID4(model_id)
     except ValueError:
+        logger.warning("Invalid UUID path parameter model_id=%s", model_id)
         raise HTTPException(status_code=422, detail="Invalid UUID format (path parameter)")
 
 
@@ -81,4 +88,5 @@ def parse_optional_uuid_query(model_id: Optional[str] = Query(None)) -> Optional
     try:
         return UUID4(model_id)
     except ValueError:
+        logger.warning("Invalid UUID query parameter model_id=%s", model_id)
         raise HTTPException(status_code=422, detail="Invalid UUID format (query parameter)")
