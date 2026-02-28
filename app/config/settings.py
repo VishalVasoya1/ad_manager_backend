@@ -16,7 +16,6 @@ _ENV_PATH = _BASE / ".env"
 class Settings(BaseSettings):
     """Reads all configuration from the .env file at project root."""
 
-    APP_NAME: str
     APP_ENV: str
     DEBUG: bool
 

@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  admanager:
+    container_name: admanager-api
+    build: .
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env.dev
+    restart: unless-stopped
