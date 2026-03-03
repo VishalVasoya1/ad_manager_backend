@@ -18,6 +18,7 @@ from app.router.user.application.application import UserApplicationRouter
 from app.router.user.ad_type.ad_type import UserAdTypeRouter
 from app.router.user.ad_field.ad_field import UserAdFieldRouter
 from app.router.user.ad_master.ad_master import UserAdMasterRouter
+from app.router.user.api_key.api_key_data import ApiKeyDataRouter
 
 
 class AdManagerApp(FastAPI):
@@ -55,6 +56,7 @@ class AdManagerApp(FastAPI):
         self.include_router(UserAdTypeRouter().router)
         self.include_router(UserAdFieldRouter().router)
         self.include_router(UserAdMasterRouter().router)
+        self.include_router(ApiKeyDataRouter().router)
 
     async def _cleanup_blacklist_loop(self):
         """Periodically delete expired tokens from the blacklist every 10 minutes."""
@@ -119,4 +121,5 @@ async def health_check():
 async def ping():
     """Basic connectivity check."""
     return {"message": "Welcome to Ad Manager API"}
+
 

@@ -3,7 +3,7 @@
 import json
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fastapi import Path, Query, HTTPException
 from pydantic import UUID4
@@ -12,7 +12,13 @@ from app.services.logger.logger import get_logger
 logger = get_logger(__name__)
 
 
+def generate_traceback_id() -> str:
+    """Generate a unique traceback identifier for response payloads."""
+    return str(uuid.uuid4())
+
+
 def format_response(
+    *,
     detail_type=None,
     data=None,
     loc=None,
@@ -20,38 +26,40 @@ def format_response(
     input_value=None,
     reason=None,
     status_code=None,
-):
-    """Formats a standardized success response with data and metadata separated."""
-    return {
-        "data": data,
-        "meta": {
-            "type": detail_type,
-            "message": msg,
-            "status_code": status_code,
-            "traceback_id": str(uuid.uuid4()),
-        }
+    pagination: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Format standardized success response."""
+    response = {
+        "detail": [{
+            "detail_type": detail_type,
+            "traceback_id": generate_traceback_id(),
+            "msg": msg,
+            "data": data if data is not None else {}
+        }]
     }
+    if pagination is not None:
+        response["pagination"] = pagination
+    return response
 
 
 def exception_format_response(
-    detail_type=None, data=None, loc=None, msg=None, input_value=None, reason=None
-):
-    """Formats a standardized error/exception response dictionary."""
-    response_detail = {}
-    if detail_type is not None:
-        response_detail["type"] = detail_type
-    if data is not None:
-        response_detail["data"] = data
-    if loc is not None:
-        response_detail["loc"] = [loc]
-    if msg is not None:
-        response_detail["msg"] = msg
-    if input_value is not None:
-        response_detail["input"] = input_value
-    if reason is not None:
-        response_detail["ctx"] = {"reason": reason}
-    response_detail["traceback_id"] = str(uuid.uuid4())
-    return response_detail
+    *,
+    detail_type=None,
+    data=None,
+    loc=None,
+    msg=None,
+    input_value=None,
+    reason=None,
+) -> Dict[str, Any]:
+    """Format standardized error response."""
+    payload = {
+        "detail_type": detail_type,
+        "traceback_id": generate_traceback_id(),
+        "msg": msg,
+    }
+    if reason:
+        payload["ctx"] = {"reason": reason}
+    return payload
 
 
 def load_message_details(file_path: str) -> dict:
