@@ -6,9 +6,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, field_validator
 
+
 class AdFieldCreateRequest(BaseModel):
     app_id: UUID
-    ad_type_id: UUID
     type: str
     value: Optional[str] = None
     regex: Optional[str] = None
@@ -20,6 +20,7 @@ class AdFieldCreateRequest(BaseModel):
         if v not in valid:
             raise ValueError(f"Ad field type must be one of: {', '.join(valid)}")
         return v.lower()
+
 
 class AdFieldUpdateRequest(BaseModel):
     type: Optional[str] = None
@@ -34,10 +35,10 @@ class AdFieldUpdateRequest(BaseModel):
             raise ValueError(f"Ad field type must be one of: {', '.join(valid)}")
         return v.lower() if v else v
 
+
 class AdFieldOut(BaseModel):
     id: UUID
     app_id: UUID
-    ad_type_id: UUID
     type: str
     value: Optional[str]
     regex: Optional[str]
@@ -45,7 +46,6 @@ class AdFieldOut(BaseModel):
     updated_by: UUID
     created_at: datetime
     updated_at: datetime
+
     class Config:
         from_attributes = True
-
-

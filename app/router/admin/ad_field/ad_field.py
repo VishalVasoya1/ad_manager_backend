@@ -1,4 +1,4 @@
-"""Ad Field router Ã¢â‚¬â€ CRUD. Write operations are admin-only."""
+"""Ad Field router — CRUD. Write operations are admin-only."""
 
 from typing import Optional
 from uuid import UUID
@@ -54,7 +54,7 @@ class AdFieldRouter:
                 module="ad_field",
                 action="create",
                 reference_id=field.id,
-                description=f"Created '{body.type}' ad field for app '{body.app_id}', ad type '{body.ad_type_id}', value='{body.value or 'N/A'}'.",
+                description=f"Created '{body.type}' ad field for app '{body.app_id}', value='{body.value or 'N/A'}'.",
                 ip_address=ip_address,
             )
             await db.commit()
@@ -71,17 +71,16 @@ class AdFieldRouter:
         except Exception as e:
             return self.handle_exception(endpoint, e)
 
-    async def get_all(self, request: Request, app_id: Optional[UUID] = Query(None), ad_type_id: Optional[UUID] = Query(None), type: Optional[str] = Query(None), user_id: Optional[UUID] = Query(None), db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
-        """Return all active ad fields with optional filters for app_id, ad_type_id, type, and user_id."""
+    async def get_all(self, request: Request, app_id: Optional[UUID] = Query(None), type: Optional[str] = Query(None), user_id: Optional[UUID] = Query(None), db: AsyncSession = Depends(get_db), payload=Depends(jwt_bearer)):
+        """Return all active ad fields with optional filters for app_id, type, and user_id."""
         endpoint = "/adfield"
         try:
             admin_id = UUID(payload["user_id"])
             ip_address = request.client.host if request.client else None
-            items = await AdFieldQuery.get_all(db, app_id, ad_type_id, type, user_id)
+            items = await AdFieldQuery.get_all(db, app_id, type, user_id)
 
             filters = []
             if app_id: filters.append(f"app_id='{app_id}'")
-            if ad_type_id: filters.append(f"ad_type_id='{ad_type_id}'")
             if type: filters.append(f"type='{type}'")
             if user_id: filters.append(f"user_id='{user_id}'")
             filter_str = ", ".join(filters) if filters else "no filters"
@@ -123,7 +122,7 @@ class AdFieldRouter:
                 module="ad_field",
                 action="view",
                 reference_id=field_id,
-                description=f"Viewed '{item.type}' ad field (app: '{item.app_id}', ad type: '{item.ad_type_id}', value: '{item.value or 'N/A'}').",
+                description=f"Viewed '{item.type}' ad field (app: '{item.app_id}', value: '{item.value or 'N/A'}').",
                 ip_address=ip_address,
             )
             await db.commit()
@@ -154,8 +153,7 @@ class AdFieldRouter:
                 "type": item.type,
                 "value": item.value,
                 "regex": item.regex,
-                "app_id": item.app_id,
-                "ad_type_id": item.ad_type_id,
+                "app_id": str(item.app_id),
             }
             for field, value in body.model_dump(exclude_none=True).items():
                 setattr(item, field, value)
@@ -169,8 +167,7 @@ class AdFieldRouter:
                 "type": item.type,
                 "value": item.value,
                 "regex": item.regex,
-                "app_id": item.app_id,
-                "ad_type_id": item.ad_type_id,
+                "app_id": str(item.app_id),
             }
             description_json = ActivityService.build_update_description(
                 old_data=old_data,
@@ -219,7 +216,7 @@ class AdFieldRouter:
                 module="ad_field",
                 action="delete",
                 reference_id=field_id,
-                description=f"Deleted '{item.type}' ad field (app: '{item.app_id}', ad type: '{item.ad_type_id}', value: '{item.value or 'N/A'}').",
+                description=f"Deleted '{item.type}' ad field (app: '{item.app_id}', value: '{item.value or 'N/A'}').",
                 ip_address=ip_address,
             )
             await db.commit()
@@ -259,5 +256,3 @@ class AdFieldRouter:
 
 
 ad_field_router = AdFieldRouter()
-
-

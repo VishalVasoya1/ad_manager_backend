@@ -11,7 +11,7 @@ from app.model.base import BaseModel
 
 
 class AdField(BaseModel):
-    """Represents dynamic fields attached to ad types per application."""
+    """Represents dynamic fields attached to an application."""
 
     __tablename__: ClassVar[str] = "ad_field"
 
@@ -25,13 +25,6 @@ class AdField(BaseModel):
     app_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("application.id"),
-        nullable=False,
-        index=True,
-    )
-
-    ad_type_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        ForeignKey("ad_type.id"),
         nullable=False,
         index=True,
     )
@@ -66,11 +59,6 @@ class AdField(BaseModel):
 
     application = relationship(
         "Application",
-        lazy="joined",
-    )
-
-    ad_type = relationship(
-        "AdType",
         lazy="joined",
     )
 

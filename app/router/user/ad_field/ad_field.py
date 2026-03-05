@@ -1,4 +1,4 @@
-"""User-side Ad Field router Ã¢â‚¬â€ GET only, restricted to user's assigned applications."""
+"""User-side Ad Field router — GET only, restricted to user's assigned applications."""
 
 from typing import Optional
 from uuid import UUID
@@ -36,7 +36,6 @@ class UserAdFieldRouter:
         self,
         request: Request,
         app_id: Optional[UUID] = Query(None),
-        ad_type_id: Optional[UUID] = Query(None),
         type_filter: Optional[str] = Query(None, alias="type"),
         db: AsyncSession = Depends(get_db),
         payload=Depends(require_user),
@@ -48,7 +47,7 @@ class UserAdFieldRouter:
             ip_address = request.client.host if request.client else None
 
             user_app_ids = await ApplicationQuery.get_app_ids_for_user(user_id, db)
-            items = await AdFieldQuery.get_all_for_user(db, user_app_ids, app_id, ad_type_id, type_filter)
+            items = await AdFieldQuery.get_all_for_user(db, user_app_ids, app_id, type_filter)
 
             await ActivityService.log_activity(
                 db=db,
@@ -79,7 +78,7 @@ class UserAdFieldRouter:
         db: AsyncSession = Depends(get_db),
         payload=Depends(require_user),
     ):
-        """Return a single ad field by ID Ã¢â‚¬â€ only if it belongs to one of the user's assigned applications."""
+        """Return a single ad field by ID — only if it belongs to one of the user's assigned applications."""
         endpoint = f"/ads/v1/adfield/{field_id}"
         try:
             user_id = UUID(payload["user_id"])
@@ -131,5 +130,3 @@ class UserAdFieldRouter:
         )
         logger.critical(f"{endpoint}: {error_type} - {response}")
         raise HTTPException(status_code=error_details[error_type]["status_code"], detail=[response])
-
-

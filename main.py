@@ -8,16 +8,12 @@ from app.config.postgres import init_db, close_db
 from app.router.admin.auth.auth import AuthRouter
 from app.router.admin.user.user import UserRouter
 from app.router.admin.application.application import ApplicationRouter
-from app.router.admin.ad_master.ad_master import AdMasterRouter
-from app.router.admin.ad_type.ad_type import AdTypeRouter
 from app.router.admin.ad_field.ad_field import AdFieldRouter
 from app.router.admin.logs.logs import LoginLogsRouter
 from app.router.admin.activity.activity import UserActivityRouter
 from app.router.user.auth.auth import UserAuthRouter
 from app.router.user.application.application import UserApplicationRouter
-from app.router.user.ad_type.ad_type import UserAdTypeRouter
 from app.router.user.ad_field.ad_field import UserAdFieldRouter
-from app.router.user.ad_master.ad_master import UserAdMasterRouter
 from app.router.user.api_key.api_key_data import ApiKeyDataRouter
 
 
@@ -45,17 +41,13 @@ class AdManagerApp(FastAPI):
         self.include_router(AuthRouter().router)
         self.include_router(UserRouter().router)
         self.include_router(ApplicationRouter().router)
-        self.include_router(AdMasterRouter().router)
-        self.include_router(AdTypeRouter().router)
         self.include_router(AdFieldRouter().router)
         self.include_router(LoginLogsRouter().router)
         self.include_router(UserActivityRouter().router)
         # User-side routes (GET only, role='user')
         self.include_router(UserAuthRouter().router)
         self.include_router(UserApplicationRouter().router)
-        self.include_router(UserAdTypeRouter().router)
         self.include_router(UserAdFieldRouter().router)
-        self.include_router(UserAdMasterRouter().router)
         self.include_router(ApiKeyDataRouter().router)
 
     async def _cleanup_blacklist_loop(self):
@@ -80,24 +72,24 @@ class AdManagerApp(FastAPI):
                     )
                     await db.commit()
             except Exception as e:
-                print(f"âš ï¸ Blacklist cleanup error: {e}")
+                print(f"⚠️ Blacklist cleanup error: {e}")
             await asyncio.sleep(600)
 
     def _register_lifecycle_events(self):
         """Register startup and shutdown handlers."""
         @self.on_event("startup")
         async def on_startup():
-            print("ðŸš€ Starting Ad Manager application...")
+            print("🚀 Starting Ad Manager application...")
             await init_db()
             import asyncio
             asyncio.create_task(self._cleanup_blacklist_loop())
-            print("âœ… Application started")
+            print("✅ Application started")
 
         @self.on_event("shutdown")
         async def on_shutdown():
-            print("ðŸ›‘ Shutting down Ad Manager application...")
+            print("🛑 Shutting down Ad Manager application...")
             await close_db()
-            print("âœ… Shutdown complete")
+            print("✅ Shutdown complete")
 
 
 app = AdManagerApp(
@@ -121,5 +113,3 @@ async def health_check():
 async def ping():
     """Basic connectivity check."""
     return {"message": "Welcome to Ad Manager API"}
-
-
