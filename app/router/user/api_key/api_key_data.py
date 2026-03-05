@@ -12,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.postgres import get_db
 from app.model.ad_field import AdField
-from app.model.ad_type import AdType
 from app.model.application import Application
 from app.services.logger.logger import get_logger
 from app.utils.helper import exception_format_response, format_response, load_message_details
@@ -35,7 +34,7 @@ class ApiKeyDataRouter:
         api_key: str = Query(..., min_length=1),
         db: AsyncSession = Depends(get_db),
     ):
-        """Return all assigned applications and their connected ad types/ad fields for the API key owner."""
+        """Return all assigned applications and their connected ad fields for the API key owner."""
         endpoint = "/ads/v1/api-key/applications"
         try:
             owner_app = await self._get_application_by_api_key(db=db, api_key=api_key)
@@ -55,12 +54,7 @@ class ApiKeyDataRouter:
                 )
 
             app_ids = [app.id for app in apps]
-            ad_types = await self._get_ad_types_for_apps(db=db, app_ids=app_ids)
             ad_fields = await self._get_ad_fields_for_apps(db=db, app_ids=app_ids)
-
-            ad_types_by_app: dict[UUID, list[AdType]] = defaultdict(list)
-            for ad_type in ad_types:
-                ad_types_by_app[ad_type.app_id].append(ad_type)
 
             ad_fields_by_app: dict[UUID, list[AdField]] = defaultdict(list)
             for ad_field in ad_fields:
@@ -71,7 +65,6 @@ class ApiKeyDataRouter:
                 items.append(
                     {
                         "application": self._serialize_application(app),
-                        "ad_types": [self._serialize_ad_type(item) for item in ad_types_by_app.get(app.id, [])],
                         "ad_fields": [self._serialize_ad_field(item) for item in ad_fields_by_app.get(app.id, [])],
                     }
                 )
@@ -110,24 +103,9 @@ class ApiKeyDataRouter:
         )
         return list(result.scalars().all())
 
-    async def _get_ad_types_for_apps(self, db: AsyncSession, app_ids: list[UUID]) -> list[AdType]:
-        if not app_ids:
-            return []
-
-        result = await db.execute(
-            select(AdType)
-            .where(
-                AdType.app_id.in_(app_ids),
-                AdType.is_deleted.is_(False),
-            )
-            .order_by(AdType.created_at.desc())
-        )
-        return list(result.scalars().all())
-
     async def _get_ad_fields_for_apps(self, db: AsyncSession, app_ids: list[UUID]) -> list[AdField]:
         if not app_ids:
             return []
-
         result = await db.execute(
             select(AdField)
             .where(
@@ -163,38 +141,10 @@ class ApiKeyDataRouter:
         }
 
     @classmethod
-    def _serialize_ad_type(cls, ad_type: AdType) -> dict[str, Any]:
-        ad_format = ad_type.ad_format
-        ad_platform = ad_type.ad_platform
-
-        return {
-            "id": ad_type.id,
-            "app_id": ad_type.app_id,
-            "ad_format_id": ad_type.ad_format_id,
-            "ad_platform_id": ad_type.ad_platform_id,
-            "status": ad_type.status,
-            "created_by": ad_type.created_by,
-            "updated_by": ad_type.updated_by,
-            "created_at": cls._iso(ad_type.created_at),
-            "updated_at": cls._iso(ad_type.updated_at),
-            "ad_format": {
-                "id": ad_format.id,
-                "title": ad_format.title,
-                "type": ad_format.type,
-            } if ad_format else None,
-            "ad_platform": {
-                "id": ad_platform.id,
-                "title": ad_platform.title,
-                "type": ad_platform.type,
-            } if ad_platform else None,
-        }
-
-    @classmethod
     def _serialize_ad_field(cls, ad_field: AdField) -> dict[str, Any]:
         return {
             "id": ad_field.id,
             "app_id": ad_field.app_id,
-            "ad_type_id": ad_field.ad_type_id,
             "type": ad_field.type,
             "value": ad_field.value,
             "regex": ad_field.regex,

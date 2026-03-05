@@ -53,54 +53,6 @@
         "reason": "The application was soft-deleted from the system.",
         "status_code": 200
     },
-    "ad_master_create_success": {
-        "detail_type": "AdMasterCreated",
-        "msg": "Ad Master created successfully.",
-        "reason": "The ad master entry was saved to the database.",
-        "status_code": 201
-    },
-    "ad_master_retrieve_success": {
-        "detail_type": "AdMasterFetched",
-        "msg": "Ad Master(s) retrieved successfully.",
-        "reason": "The ad master data was fetched from the database.",
-        "status_code": 200
-    },
-    "ad_master_update_success": {
-        "detail_type": "AdMasterUpdated",
-        "msg": "Ad Master updated successfully.",
-        "reason": "The ad master entry was updated in the database.",
-        "status_code": 200
-    },
-    "ad_master_delete_success": {
-        "detail_type": "AdMasterDeleted",
-        "msg": "Ad Master deleted successfully.",
-        "reason": "The ad master entry was soft-deleted from the system.",
-        "status_code": 200
-    },
-    "ad_type_create_success": {
-        "detail_type": "AdTypeCreated",
-        "msg": "Ad Type created successfully.",
-        "reason": "The ad type entry was saved to the database.",
-        "status_code": 201
-    },
-    "ad_type_retrieve_success": {
-        "detail_type": "AdTypeFetched",
-        "msg": "Ad Type(s) retrieved successfully.",
-        "reason": "The ad type data was fetched from the database.",
-        "status_code": 200
-    },
-    "ad_type_update_success": {
-        "detail_type": "AdTypeUpdated",
-        "msg": "Ad Type updated successfully.",
-        "reason": "The ad type entry was updated in the database.",
-        "status_code": 200
-    },
-    "ad_type_delete_success": {
-        "detail_type": "AdTypeDeleted",
-        "msg": "Ad Type deleted successfully.",
-        "reason": "The ad type entry was soft-deleted from the system.",
-        "status_code": 200
-    },
     "ad_field_create_success": {
         "detail_type": "AdFieldCreated",
         "msg": "Ad Field created successfully.",

@@ -47,14 +47,6 @@ def check_app_type(cls, v: str) -> str:
     return v.lower()
 
 
-def check_ad_master_type(cls, v: str) -> str:
-    """Validate ad master type."""
-    if v not in ("ad_format", "ad_platform"):
-        logger.warning("Ad master type validation failed type=%s", v)
-        raise ValueError("Type must be 'ad_format' or 'ad_platform'")
-    return v.lower()
-
-
 def check_ad_field_type(cls, v: str) -> str:
     """Validate ad field type."""
     valid = ("radio", "dropdown", "input", "textfield", "checkbox")
