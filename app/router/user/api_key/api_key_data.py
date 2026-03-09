@@ -3,6 +3,7 @@
 from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 from uuid import UUID
 
@@ -13,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config.postgres import get_db
 from app.model.ad_field import AdField
 from app.model.application import Application
+from app.services.cache.api_key_cache_service import api_key_cache_service
 from app.services.logger.logger import get_logger
 from app.utils.helper import exception_format_response, format_response, load_message_details
 
@@ -36,7 +38,20 @@ class ApiKeyDataRouter:
     ):
         """Return all assigned applications and their connected ad fields for the API key owner."""
         endpoint = "/ads/v1/api-key/applications"
+        request_start = perf_counter()
         try:
+            cached_data = await api_key_cache_service.get_api_key_data(api_key)
+            if cached_data is not None:
+                total_ms = (perf_counter() - request_start) * 1000
+                logger.info("API key data served from Redis api_key=%s total_ms=%.2f", api_key, total_ms)
+                success_type = "application_retrieve_success"
+                return format_response(
+                    detail_type=success_details[success_type]["detail_type"],
+                    data=cached_data,
+                    msg=success_details[success_type]["msg"],
+                    status_code=success_details[success_type]["status_code"],
+                )
+
             owner_app = await self._get_application_by_api_key(db=db, api_key=api_key)
             if not owner_app:
                 self.raise_detailed_exception(endpoint, "invalid_api_key")
@@ -46,9 +61,11 @@ class ApiKeyDataRouter:
 
             if not apps:
                 success_type = "application_retrieve_success"
+                payload_data = {"user_id": str(user_id), "items": []}
+                await api_key_cache_service.set_api_key_data(api_key, payload_data)
                 return format_response(
                     detail_type=success_details[success_type]["detail_type"],
-                    data={"user_id": user_id, "items": []},
+                    data=payload_data,
                     msg=success_details[success_type]["msg"],
                     status_code=success_details[success_type]["status_code"],
                 )
@@ -69,10 +86,15 @@ class ApiKeyDataRouter:
                     }
                 )
 
+            payload_data = {"user_id": str(user_id), "items": items}
+            await api_key_cache_service.set_api_key_data(api_key, payload_data)
+            total_ms = (perf_counter() - request_start) * 1000
+            logger.info("API key data served from Postgres then cached api_key=%s total_ms=%.2f", api_key, total_ms)
+
             success_type = "application_retrieve_success"
             return format_response(
                 detail_type=success_details[success_type]["detail_type"],
-                data={"user_id": user_id, "items": items},
+                data=payload_data,
                 msg=success_details[success_type]["msg"],
                 status_code=success_details[success_type]["status_code"],
             )

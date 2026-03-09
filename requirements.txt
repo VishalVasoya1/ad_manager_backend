@@ -18,3 +18,4 @@ python-multipart==0.0.6
 
 typing_extensions==4.15.0
 greenlet==3.0.3
+redis==5.3.1

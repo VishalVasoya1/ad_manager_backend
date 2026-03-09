@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     AWS_REGION: Optional[str] = None
     AWS_S3_BUCKET: Optional[str] = None
+    REDIS_URL: Optional[str] = None
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: Optional[str] = None
+    REDIS_CACHE_TTL_SECONDS: int = 3600
 
     @property
     def DATABASE_URL(self) -> str:
@@ -47,6 +53,16 @@ class Settings(BaseSettings):
         url = f"postgresql+asyncpg://{self.DB_USER}:{password}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         logger.debug("DATABASE_URL generated for host=%s port=%s db=%s", self.DB_HOST, self.DB_PORT, self.DB_NAME)
         return url
+
+    @property
+    def CACHE_REDIS_URL(self) -> str:
+        """Build the Redis connection URL used for caching."""
+        if self.REDIS_URL:
+            return self.REDIS_URL
+        auth = ""
+        if self.REDIS_PASSWORD:
+            auth = f":{quote_plus(self.REDIS_PASSWORD)}@"
+        return f"redis://{auth}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
     model_config = SettingsConfigDict(
         env_file=str(_ENV_PATH),

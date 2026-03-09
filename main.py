@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config.postgres import init_db, close_db
+from app.config.redis import RedisManager
 
 from app.router.admin.auth.auth import AuthRouter
 from app.router.admin.user.user import UserRouter
@@ -81,6 +82,7 @@ class AdManagerApp(FastAPI):
         async def on_startup():
             print("🚀 Starting Ad Manager application...")
             await init_db()
+            await RedisManager.init()
             import asyncio
             asyncio.create_task(self._cleanup_blacklist_loop())
             print("✅ Application started")
@@ -88,6 +90,7 @@ class AdManagerApp(FastAPI):
         @self.on_event("shutdown")
         async def on_shutdown():
             print("🛑 Shutting down Ad Manager application...")
+            await RedisManager.close()
             await close_db()
             print("✅ Shutdown complete")
 

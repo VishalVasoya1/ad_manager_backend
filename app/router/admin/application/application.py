@@ -15,6 +15,7 @@ from app.utils.helper import load_message_details, format_response, exception_fo
 from app.router.admin.application.application_access import ApplicationQuery
 from app.router.admin.application.application_validator import ApplicationCreateRequest, ApplicationUpdateRequest, ApplicationOut
 from app.model.application import Application
+from app.services.cache.api_key_cache_service import api_key_cache_service
 from app.services.activity.activity_service import ActivityService
 
 
@@ -66,6 +67,7 @@ class ApplicationRouter:
             await db.refresh(app)
             await db.commit()
             await db.refresh(app)
+            await api_key_cache_service.refresh_user_cache(db=db, user_id=app.assign_by)
 
             await ActivityService.log_activity(
                 db=db,
@@ -205,6 +207,9 @@ class ApplicationRouter:
             await db.flush()
             await db.commit()
             await db.refresh(app)
+            await api_key_cache_service.refresh_user_cache(db=db, user_id=app.assign_by)
+            if old_assign_by != app.assign_by:
+                await api_key_cache_service.refresh_user_cache(db=db, user_id=old_assign_by)
 
             updated_data = {
                 "name": app.name,
@@ -251,10 +256,15 @@ class ApplicationRouter:
             app = await ApplicationQuery.get_by_id(app_id, db)
             if not app:
                 self.raise_detailed_exception(endpoint, "application_not_found")
+            old_assign_by = app.assign_by
+            deleted_app_api_key = app.api_key
+            deleted_app_user_id = app.assign_by
 
             app.is_deleted = True
             await db.flush()
             await db.commit()
+            await api_key_cache_service.delete_api_key(deleted_app_api_key)
+            await api_key_cache_service.refresh_user_cache(db=db, user_id=deleted_app_user_id)
 
             await ActivityService.log_activity(
                 db=db,
@@ -288,6 +298,7 @@ class ApplicationRouter:
             app = await ApplicationQuery.get_by_id(app_id, db)
             if not app:
                 self.raise_detailed_exception(endpoint, "application_not_found")
+            old_api_key = app.api_key
 
             old_data = {"api_key": "[REDACTED]"}
             app.api_key = secrets.token_urlsafe(32)
@@ -296,6 +307,8 @@ class ApplicationRouter:
             await db.flush()
             await db.commit()
             await db.refresh(app)
+            await api_key_cache_service.delete_api_key(old_api_key)
+            await api_key_cache_service.refresh_user_cache(db=db, user_id=app.assign_by)
 
             updated_data = {"api_key": "[REDACTED]"}
             description_json = ActivityService.build_update_description(
