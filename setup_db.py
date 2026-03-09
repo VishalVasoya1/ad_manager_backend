@@ -5,7 +5,7 @@ Run this with PostgreSQL superuser credentials.
 
 import asyncio
 import asyncpg
-from app.config.settings import settings
+from app.config.setting import settings
 
 
 async def create_database():
@@ -15,12 +15,14 @@ async def create_database():
     postgres_user = input("PostgreSQL username (default: postgres): ").strip() or "postgres"
     postgres_password = input("PostgreSQL password: ").strip()
     
+    db_user, _, db_host, db_port, db_name = settings.DB_PARSED
+
     # Connect to the default 'postgres' database to create our database
     conn = await asyncpg.connect(
         user=postgres_user,
         password=postgres_password,
-        host=settings.DB_HOST,
-        port=settings.DB_PORT,
+        host=db_host,
+        port=db_port,
         database='postgres'
     )
     
@@ -28,31 +30,33 @@ async def create_database():
         # Check if database exists
         exists = await conn.fetchval(
             "SELECT 1 FROM pg_database WHERE datname = $1",
-            settings.DB_NAME
+            db_name
         )
         
         if not exists:
             # Create database
-            await conn.execute(f'CREATE DATABASE {settings.DB_NAME}')
-            print(f"✅ Database '{settings.DB_NAME}' created successfully!")
+            await conn.execute(f'CREATE DATABASE {db_name}')
+            print(f"✅ Database '{db_name}' created successfully!")
             
             # Grant privileges to app user
-            await conn.execute(f'GRANT ALL PRIVILEGES ON DATABASE {settings.DB_NAME} TO {settings.DB_USER}')
-            print(f"✅ Granted privileges to '{settings.DB_USER}'")
+            await conn.execute(f'GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {db_user}')
+            print(f"✅ Granted privileges to '{db_user}'")
         else:
-            print(f"ℹ️  Database '{settings.DB_NAME}' already exists.")
+            print(f"ℹ️  Database '{db_name}' already exists.")
     finally:
         await conn.close()
 
 
 async def add_user_tracking_columns():
     """Add created_by and updated_by columns to app_user table if they don't exist."""
+    db_user, db_password, db_host, db_port, db_name = settings.DB_PARSED
+
     conn = await asyncpg.connect(
-        user=settings.DB_USER,
-        password=settings.DB_PASSWORD,
-        host=settings.DB_HOST,
-        port=settings.DB_PORT,
-        database=settings.DB_NAME
+        user=db_user,
+        password=db_password,
+        host=db_host,
+        port=db_port,
+        database=db_name
     )
     
     try:
@@ -101,11 +105,8 @@ async def main():
         print(f"\n❌ Setup failed: {e}")
         print("\nTroubleshooting:")
         print("1. Make sure PostgreSQL is running")
-        print("2. Check your .env file has correct credentials:")
-        print(f"   DB_USER={settings.DB_USER}")
-        print(f"   DB_HOST={settings.DB_HOST}")
-        print(f"   DB_PORT={settings.DB_PORT}")
-        print(f"   DB_NAME={settings.DB_NAME}")
+        print("2. Check your .env file has a valid DB_URL")
+        print(f"   DB_URL={settings.DB_URL}")
         print("3. Make sure the postgres superuser password is correct")
 
 

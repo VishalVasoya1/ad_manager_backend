@@ -56,7 +56,7 @@ class AdManagerApp(FastAPI):
         import asyncio
         from app.config.postgres import AsyncSessionLocal
         from app.model.token_blacklist import TokenBlacklist
-        from app.config.settings import settings
+        from app.config.setting import settings
         from sqlalchemy import delete
         from datetime import datetime, timedelta, timezone
 

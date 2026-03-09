@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.redis import RedisManager
-from app.config.settings import settings
+from app.config.setting import settings
 from app.model.ad_field import AdField
 from app.model.application import Application
 from app.services.logger.logger import get_logger

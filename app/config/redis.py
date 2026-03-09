@@ -3,7 +3,7 @@
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
-from app.config.settings import settings
+from app.config.setting import settings
 from app.services.logger.logger import get_logger
 
 logger = get_logger(__name__)
