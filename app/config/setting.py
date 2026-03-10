@@ -10,7 +10,7 @@ from app.services.logger.logger import get_logger
 
 logger = get_logger(__name__)
 _BASE = Path(__file__).resolve().parents[2]
-_ENV_PATH = _BASE / ".env"
+_ENV_PATH = _BASE / ".env.dev"
 
 
 class Settings(BaseSettings):
