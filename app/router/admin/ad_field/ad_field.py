@@ -14,6 +14,7 @@ from app.utils.helper import load_message_details, format_response, exception_fo
 from app.router.admin.ad_field.ad_field_access import AdFieldQuery
 from app.router.admin.ad_field.ad_field_validator import AdFieldCreateRequest, AdFieldUpdateRequest, AdFieldOut
 from app.model.ad_field import AdField
+from app.services.cache.api_key_cache_service import api_key_cache_service
 from app.services.activity.activity_service import ActivityService
 
 
@@ -47,6 +48,9 @@ class AdFieldRouter:
             await db.refresh(field)
             await db.commit()
             await db.refresh(field)
+            owner_user_id = await api_key_cache_service.get_user_id_for_application(db=db, app_id=field.app_id)
+            if owner_user_id:
+                await api_key_cache_service.refresh_user_cache(db=db, user_id=owner_user_id)
 
             await ActivityService.log_activity(
                 db=db,
@@ -162,6 +166,14 @@ class AdFieldRouter:
             await db.flush()
             await db.commit()
             await db.refresh(item)
+            old_owner_user_id = await api_key_cache_service.get_user_id_for_application(
+                db=db, app_id=old_app_id, include_deleted=True
+            )
+            new_owner_user_id = await api_key_cache_service.get_user_id_for_application(db=db, app_id=item.app_id)
+            if old_owner_user_id:
+                await api_key_cache_service.refresh_user_cache(db=db, user_id=old_owner_user_id)
+            if new_owner_user_id and new_owner_user_id != old_owner_user_id:
+                await api_key_cache_service.refresh_user_cache(db=db, user_id=new_owner_user_id)
 
             updated_data = {
                 "type": item.type,
@@ -205,10 +217,17 @@ class AdFieldRouter:
             item = await AdFieldQuery.get_by_id(field_id, db)
             if not item:
                 self.raise_detailed_exception(endpoint, "ad_field_not_found")
+            old_app_id = item.app_id
+            app_id = item.app_id
 
             item.is_deleted = True
             await db.flush()
             await db.commit()
+            owner_user_id = await api_key_cache_service.get_user_id_for_application(
+                db=db, app_id=app_id, include_deleted=True
+            )
+            if owner_user_id:
+                await api_key_cache_service.refresh_user_cache(db=db, user_id=owner_user_id)
 
             await ActivityService.log_activity(
                 db=db,

@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.config.settings import settings
+from app.config.setting import settings
 from app.model.base import Base
 from app.services.logger.logger import get_logger
 
