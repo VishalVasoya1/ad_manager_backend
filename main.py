@@ -100,9 +100,9 @@ app = AdManagerApp(
     description="Ad Manager API for managing ads, applications, and users.",
     version="1.0.0",
     debug=True,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url="/ads/v1/docs",
+    redoc_url="/ads/v1/redoc",
+    openapi_url="/ads/v1/openapi.json",
 )
 
 
