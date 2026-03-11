@@ -208,6 +208,7 @@ class ApplicationRouter:
             await db.commit()
             await db.refresh(app)
             await api_key_cache_service.refresh_user_cache(db=db, user_id=app.assign_by)
+            old_assign_by = app.assign_by
             if old_assign_by != app.assign_by:
                 await api_key_cache_service.refresh_user_cache(db=db, user_id=old_assign_by)
 
