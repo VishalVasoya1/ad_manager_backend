@@ -153,6 +153,8 @@ class AdFieldRouter:
             if not item:
                 self.raise_detailed_exception(endpoint, "ad_field_not_found")
 
+            old_app_id = item.app_id
+
             old_data = {
                 "type": item.type,
                 "value": item.value,
