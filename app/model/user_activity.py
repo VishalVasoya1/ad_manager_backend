@@ -18,7 +18,7 @@ class UserActivity(Base):
 
     __table_args__: ClassVar = (
         CheckConstraint(
-            "action IN ('create','update','delete','view','login','logout')",
+            "action IN ('create','update','delete','view','login','logout','bulk_create','bulk_update','bulk_delete')",
             name="ck_user_activity_action",
         ),
     )

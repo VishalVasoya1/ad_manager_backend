@@ -9,6 +9,7 @@ from app.config.redis import RedisManager
 from app.router.admin.auth.auth import AuthRouter
 from app.router.admin.user.user import UserRouter
 from app.router.admin.application.application import ApplicationRouter
+from app.router.admin.ad_field.ad_field_bulk import AdFieldBulkRouter
 from app.router.admin.ad_field.ad_field import AdFieldRouter
 from app.router.admin.logs.logs import LoginLogsRouter
 from app.router.admin.activity.activity import UserActivityRouter
@@ -42,6 +43,9 @@ class AdManagerApp(FastAPI):
         self.include_router(AuthRouter().router)
         self.include_router(UserRouter().router)
         self.include_router(ApplicationRouter().router)
+        # IMPORTANT: Bulk router MUST come before single-field router
+        # to avoid route conflicts (/adfield/bulk vs /adfield/{field_id})
+        self.include_router(AdFieldBulkRouter().router)
         self.include_router(AdFieldRouter().router)
         self.include_router(LoginLogsRouter().router)
         self.include_router(UserActivityRouter().router)

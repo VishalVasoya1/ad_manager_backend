@@ -11,6 +11,7 @@ class AdFieldCreateRequest(BaseModel):
     app_id: UUID
     type: str
     value: Optional[str] = None
+    type_value: Optional[str] = None
     regex: Optional[str] = None
 
     @field_validator("type", mode="before")
@@ -25,6 +26,7 @@ class AdFieldCreateRequest(BaseModel):
 class AdFieldUpdateRequest(BaseModel):
     type: Optional[str] = None
     value: Optional[str] = None
+    type_value: Optional[str] = None
     regex: Optional[str] = None
 
     @field_validator("type", mode="before")
@@ -41,6 +43,7 @@ class AdFieldOut(BaseModel):
     app_id: UUID
     type: str
     value: Optional[str]
+    type_value: Optional[str]
     regex: Optional[str]
     created_by: UUID
     updated_by: UUID

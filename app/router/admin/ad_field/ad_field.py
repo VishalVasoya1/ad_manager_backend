@@ -158,6 +158,7 @@ class AdFieldRouter:
             old_data = {
                 "type": item.type,
                 "value": item.value,
+                "type_value": item.type_value,
                 "regex": item.regex,
                 "app_id": str(item.app_id),
             }
@@ -180,6 +181,7 @@ class AdFieldRouter:
             updated_data = {
                 "type": item.type,
                 "value": item.value,
+                "type_value": item.type_value,
                 "regex": item.regex,
                 "app_id": str(item.app_id),
             }

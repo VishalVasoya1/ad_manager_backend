@@ -40,6 +40,11 @@ class AdField(BaseModel):
         nullable=True,
     )
 
+    type_value: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
     regex: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
