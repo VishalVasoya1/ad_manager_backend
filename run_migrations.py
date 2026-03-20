@@ -2,7 +2,8 @@
 Combined migration script for bulk operations feature.
 Runs all required migrations:
 1. Add type_value column to ad_field table
-2. Update user_activity constraint to allow bulk operations
+2. Add title column to ad_field table
+3. Update user_activity constraint to allow bulk operations
 """
 
 import asyncio
@@ -52,10 +53,34 @@ async def run_all_migrations():
                 ADD COLUMN type_value TEXT NULL
             """)
             print("✅ Column 'type_value' added successfully!")
-        
-        # Migration 2: Update user_activity constraint
+
+        # Migration 2: Add title column to ad_field
         print("\n" + "-" * 70)
-        print("Migration 2: Update user_activity action constraint")
+        print("Migration 2: Add title column to ad_field table")
+        print("-" * 70)
+
+        column_exists = await conn.fetchval("""
+            SELECT EXISTS (
+                SELECT 1 
+                FROM information_schema.columns 
+                WHERE table_name = 'ad_field' 
+                AND column_name = 'title'
+            )
+        """)
+
+        if column_exists:
+            print("ℹ️  Column 'title' already exists in ad_field table.")
+        else:
+            print("📝 Adding 'title' column to ad_field table...")
+            await conn.execute("""
+                ALTER TABLE ad_field
+                ADD COLUMN title VARCHAR(255) NULL
+            """)
+            print("✅ Column 'title' added successfully!")
+
+        # Migration 3: Update user_activity constraint
+        print("\n" + "-" * 70)
+        print("Migration 3: Update user_activity action constraint")
         print("-" * 70)
         
         constraint_exists = await conn.fetchval("""
@@ -101,6 +126,7 @@ async def run_all_migrations():
         print("=" * 70)
         print("\nNew features available:")
         print("  ✓ type_value column in ad_field table")
+        print("  ✓ title column in ad_field table")
         print("  ✓ Bulk create ad_fields: POST /admin/ads/v1/adfield/bulk")
         print("  ✓ Bulk update ad_fields: PUT /admin/ads/v1/adfield/bulk")
         print("  ✓ Bulk delete ad_fields: DELETE /admin/ads/v1/adfield/bulk")

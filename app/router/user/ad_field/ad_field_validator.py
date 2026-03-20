@@ -10,6 +10,7 @@ from pydantic import BaseModel, field_validator
 class AdFieldOut(BaseModel):
     id: UUID
     app_id: UUID
+    title: Optional[str]
     type: str
     value: Optional[str]
     regex: Optional[str]

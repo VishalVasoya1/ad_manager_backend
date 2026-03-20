@@ -167,6 +167,7 @@ class ApiKeyDataRouter:
         return {
             "id": ad_field.id,
             "app_id": ad_field.app_id,
+            "title": ad_field.title,
             "type": ad_field.type,
             "value": ad_field.value,
             "regex": ad_field.regex,

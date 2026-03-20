@@ -14,6 +14,7 @@ class AdFieldBulkCreateRequest(BaseModel):
 class AdFieldBulkUpdateItem(BaseModel):
     """Single ad field update item with ID."""
     id: UUID
+    title: Optional[str] = None
     type: Optional[str] = None
     value: Optional[str] = None
     type_value: Optional[str] = None

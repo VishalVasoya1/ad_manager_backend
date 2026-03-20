@@ -29,6 +29,11 @@ class AdField(BaseModel):
         index=True,
     )
 
+    title: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
     type: Mapped[str] = mapped_column(
         String(50),
         nullable=False,

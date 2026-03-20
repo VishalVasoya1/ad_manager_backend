@@ -9,6 +9,7 @@ from pydantic import BaseModel, field_validator
 
 class AdFieldCreateRequest(BaseModel):
     app_id: UUID
+    title: Optional[str] = None
     type: str
     value: Optional[str] = None
     type_value: Optional[str] = None
@@ -24,6 +25,7 @@ class AdFieldCreateRequest(BaseModel):
 
 
 class AdFieldUpdateRequest(BaseModel):
+    title: Optional[str] = None
     type: Optional[str] = None
     value: Optional[str] = None
     type_value: Optional[str] = None
@@ -41,6 +43,7 @@ class AdFieldUpdateRequest(BaseModel):
 class AdFieldOut(BaseModel):
     id: UUID
     app_id: UUID
+    title: Optional[str]
     type: str
     value: Optional[str]
     type_value: Optional[str]

@@ -58,7 +58,10 @@ class AdFieldRouter:
                 module="ad_field",
                 action="create",
                 reference_id=field.id,
-                description=f"Created '{body.type}' ad field for app '{body.app_id}', value='{body.value or 'N/A'}'.",
+                description=(
+                    f"Created '{body.type}' ad field for app '{body.app_id}', "
+                    f"title='{body.title or 'N/A'}', value='{body.value or 'N/A'}'."
+                ),
                 ip_address=ip_address,
             )
             await db.commit()
@@ -126,7 +129,10 @@ class AdFieldRouter:
                 module="ad_field",
                 action="view",
                 reference_id=field_id,
-                description=f"Viewed '{item.type}' ad field (app: '{item.app_id}', value: '{item.value or 'N/A'}').",
+                description=(
+                    f"Viewed '{item.type}' ad field (app: '{item.app_id}', "
+                    f"title: '{item.title or 'N/A'}', value: '{item.value or 'N/A'}')."
+                ),
                 ip_address=ip_address,
             )
             await db.commit()
@@ -156,6 +162,7 @@ class AdFieldRouter:
             old_app_id = item.app_id
 
             old_data = {
+                "title": item.title,
                 "type": item.type,
                 "value": item.value,
                 "type_value": item.type_value,
@@ -179,6 +186,7 @@ class AdFieldRouter:
                 await api_key_cache_service.refresh_user_cache(db=db, user_id=new_owner_user_id)
 
             updated_data = {
+                "title": item.title,
                 "type": item.type,
                 "value": item.value,
                 "type_value": item.type_value,
@@ -239,7 +247,10 @@ class AdFieldRouter:
                 module="ad_field",
                 action="delete",
                 reference_id=field_id,
-                description=f"Deleted '{item.type}' ad field (app: '{item.app_id}', value: '{item.value or 'N/A'}').",
+                description=(
+                    f"Deleted '{item.type}' ad field (app: '{item.app_id}', "
+                    f"title: '{item.title or 'N/A'}', value: '{item.value or 'N/A'}')."
+                ),
                 ip_address=ip_address,
             )
             await db.commit()
